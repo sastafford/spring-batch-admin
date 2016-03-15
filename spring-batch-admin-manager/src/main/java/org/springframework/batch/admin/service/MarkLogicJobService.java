@@ -1,22 +1,53 @@
 package org.springframework.batch.admin.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.configuration.ListableJobLocator;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.batch.core.launch.NoSuchJobInstanceException;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.batch.core.step.NoSuchStepException;
+import org.springframework.beans.factory.DisposableBean;
 
-public class MarkLogicJobService implements JobService {
+public class MarkLogicJobService implements JobService, DisposableBean {
+	
+	private static final Log logger = LogFactory.getLog(MarkLogicJobService.class);
+	
+	private final JobLauncher jobLauncher;
+	private final ListableJobLocator jobLocator;
+	private final JobRepository jobRepository;
+	
+	private Collection<JobExecution> activeExecutions = Collections.synchronizedList(new ArrayList<JobExecution>());
+	
+	public MarkLogicJobService() {
+		this.jobLauncher = null;
+		this.jobLocator = null;
+		this.jobRepository = null;
+	}
+	
+	public MarkLogicJobService(JobRepository jobRepository, JobLauncher jobLauncher,
+			ListableJobLocator jobLocator) {
+		this.jobLocator = jobLocator;
+		this.jobRepository = jobRepository;
+		this.jobLauncher = jobLauncher;
+	}
 
 	@Override
 	public boolean isLaunchable(String jobName) {
@@ -28,8 +59,27 @@ public class MarkLogicJobService implements JobService {
 	public JobExecution launch(String jobName, JobParameters params)
 			throws NoSuchJobException, JobExecutionAlreadyRunningException, JobRestartException,
 			JobInstanceAlreadyCompleteException, JobParametersInvalidException {
-		// TODO Auto-generated method stub
-		return null;
+		Job job = jobLocator.getJob(jobName);
+
+		JobExecution lastJobExecution = jobRepository.getLastJobExecution(jobName, params);
+		boolean restart = false;
+		if (lastJobExecution != null) {
+			BatchStatus status = lastJobExecution.getStatus();
+			if (status.isUnsuccessful() && status!=BatchStatus.ABANDONED) {
+				restart = true;
+			}
+		}
+
+		if (job.getJobParametersIncrementer() != null && !restart) {
+			params = job.getJobParametersIncrementer().getNext(params);
+		}
+
+		JobExecution jobExecution = jobLauncher.run(job, params);
+
+		if (jobExecution.isRunning()) {
+			activeExecutions.add(jobExecution);
+		}
+		return jobExecution;
 	}
 
 	@Override
@@ -169,6 +219,12 @@ public class MarkLogicJobService implements JobService {
 	public Collection<String> getStepNamesForJob(String jobName) throws NoSuchJobException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
