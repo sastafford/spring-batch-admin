@@ -28,18 +28,15 @@ import org.springframework.beans.factory.DisposableBean;
 
 public class MarkLogicJobService implements JobService, DisposableBean {
 	
-	private static final Log logger = LogFactory.getLog(MarkLogicJobService.class);
+	//private static final Log logger = LogFactory.getLog(MarkLogicJobService.class);
 	
-	private final JobLauncher jobLauncher;
-	private final ListableJobLocator jobLocator;
-	private final JobRepository jobRepository;
+	private JobLauncher jobLauncher;
+	private ListableJobLocator jobLocator;
+	private JobRepository jobRepository;
 	
 	private Collection<JobExecution> activeExecutions = Collections.synchronizedList(new ArrayList<JobExecution>());
 	
 	public MarkLogicJobService() {
-		this.jobLauncher = null;
-		this.jobLocator = null;
-		this.jobRepository = null;
 	}
 	
 	public MarkLogicJobService(JobRepository jobRepository, JobLauncher jobLauncher,
