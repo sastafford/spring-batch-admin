@@ -53,6 +53,7 @@
 		<constructor-arg name="jobRepository" ref="jobRepository" />
 		<constructor-arg name="jobLauncher" ref="jobLauncher" />
 		<constructor-arg name="jobLocator" ref="jobRegistry" />
+		<constructor-arg name="jobExplorer" ref="jobExplorer" />
 	</bean>
 <!-- 
 	<task:scheduled-tasks>

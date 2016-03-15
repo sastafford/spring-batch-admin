@@ -3,6 +3,7 @@ package org.springframework.batch.admin.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +15,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.ListableJobLocator;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.NoSuchJobException;
@@ -33,6 +35,7 @@ public class MarkLogicJobService implements JobService, DisposableBean {
 	private JobLauncher jobLauncher;
 	private ListableJobLocator jobLocator;
 	private JobRepository jobRepository;
+	private JobExplorer jobExplorer;
 	
 	private Collection<JobExecution> activeExecutions = Collections.synchronizedList(new ArrayList<JobExecution>());
 	
@@ -40,10 +43,11 @@ public class MarkLogicJobService implements JobService, DisposableBean {
 	}
 	
 	public MarkLogicJobService(JobRepository jobRepository, JobLauncher jobLauncher,
-			ListableJobLocator jobLocator) {
+			ListableJobLocator jobLocator, JobExplorer jobExplorer) {
 		this.jobLocator = jobLocator;
 		this.jobRepository = jobRepository;
 		this.jobLauncher = jobLauncher;
+		this.jobExplorer = jobExplorer;
 	}
 
 	@Override
@@ -108,8 +112,17 @@ public class MarkLogicJobService implements JobService, DisposableBean {
 
 	@Override
 	public Collection<String> listJobs(int start, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		Collection<String> jobNames = new LinkedHashSet<String>(jobLocator.getJobNames());
+		if (start + count > jobNames.size()) {
+			jobNames.addAll(jobExplorer.getJobNames());
+		}
+		if (start >= jobNames.size()) {
+			start = jobNames.size();
+		}
+		if (start + count >= jobNames.size()) {
+			count = jobNames.size() - start;
+		}
+		return new ArrayList<String>(jobNames).subList(start, start + count);
 	}
 
 	@Override
