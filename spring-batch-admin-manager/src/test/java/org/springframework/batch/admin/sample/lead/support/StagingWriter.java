@@ -2,34 +2,25 @@ package org.springframework.batch.admin.sample.lead.support;
 
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.eval.ServerEvaluationCall;
 
 /**
  * @author Dave Syer
  *
  */
 public class StagingWriter implements ItemWriter<String> {
-
-	private SimpleJdbcTemplate jdbcTemplate;
 	
-	private DataFieldMaxValueIncrementer incrementer;
+	private DatabaseClient client;
 
-	public void setDataSource(DataSource dataSource) {
-		jdbcTemplate = new SimpleJdbcTemplate(dataSource);
-	}
-	
-	public void setIncrementer(DataFieldMaxValueIncrementer incrementer) {
-		this.incrementer = incrementer;
+	public void setDatabaseClient(DatabaseClient client) {
+		this.client = client;
 	}
 
 	public void write(List<? extends String> values) throws Exception {
-		for (String value : values) {
-			long id = incrementer.nextLongValue();
-			jdbcTemplate.update("INSERT INTO LEAD_INPUTS (ID, DATA) values(?,?)", id, value);			
-		}
+		ServerEvaluationCall theCall = client.newServerEval();
+		theCall.xquery("xdmp:document-insert('staging.xml', <hello />)");
 	}
 }

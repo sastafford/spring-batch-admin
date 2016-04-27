@@ -23,14 +23,7 @@
 	</bean>
 
 	<bean id="writer" class="org.springframework.batch.admin.sample.lead.support.StagingWriter">
-		<property name="dataSource" ref="dataSource"/>
-		<property name="incrementer" ref="incrementer"/>
-	</bean>
-
-	<bean id="incrementer" class="${batch.database.incrementer.class}">
-		<property name="dataSource" ref="dataSource" />
-		<property name="columnName" value="ID" />
-		<property name="incrementerName" value="LEAD_INPUTS_SEQ" />
+		<property name="databaseClient" ref="databaseClient"/>
 	</bean>
 
 </beans>
