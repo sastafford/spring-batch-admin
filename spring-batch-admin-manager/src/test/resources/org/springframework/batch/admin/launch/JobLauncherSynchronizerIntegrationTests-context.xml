@@ -29,9 +29,10 @@
 		<aop:include name="jobLauncherSynchronizer"/>
 	</aop:aspectj-autoproxy>
 
-	<bean class="org.springframework.batch.test.JobRepositoryTestUtils">
-		<property name="dataSource" ref="dataSource" />
-		<property name="jobRepository" ref="jobRepository" />
+	<bean class="com.marklogic.spring.batch.test.JobRepositoryTestUtils">
+		<constructor-arg ref="databaseClient" />
+		<constructor-arg ref="jobRepository" />
+		<constructor-arg ref="jobExplorer" />
 	</bean>
 
 </beans>
