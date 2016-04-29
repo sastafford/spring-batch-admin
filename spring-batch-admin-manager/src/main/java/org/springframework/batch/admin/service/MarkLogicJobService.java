@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -52,8 +51,7 @@ public class MarkLogicJobService implements JobService, DisposableBean {
 
 	@Override
 	public boolean isLaunchable(String jobName) {
-		// TODO Auto-generated method stub
-		return false;
+		return jobLocator.getJobNames().contains(jobName);
 	}
 
 	@Override
@@ -127,33 +125,35 @@ public class MarkLogicJobService implements JobService, DisposableBean {
 
 	@Override
 	public int countJobs() {
-		// TODO Auto-generated method stub
-		return 0;
+		return jobExplorer.getJobNames().size();
 	}
 
 	@Override
 	public JobInstance getJobInstance(long jobInstanceId) throws NoSuchJobInstanceException {
-		// TODO Auto-generated method stub
-		return null;
+		return jobExplorer.getJobInstance(jobInstanceId);
 	}
 
 	@Override
 	public Collection<JobInstance> listJobInstances(String jobName, int start, int count) throws NoSuchJobException {
-		// TODO Auto-generated method stub
-		return null;
+		return jobExplorer.getJobInstances(jobName, start, count);
 	}
 
 	@Override
 	public int countJobInstances(String jobName) throws NoSuchJobException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public Collection<JobExecution> listJobExecutionsForJob(String jobName, int start, int count)
 			throws NoSuchJobException {
-		// TODO Auto-generated method stub
-		return null;
+		List<JobInstance> jobInstances = jobExplorer.getJobInstances(jobName, start, count);
+		List<JobExecution> jobExecutions = new ArrayList<JobExecution>();
+		for ( JobInstance jobInstance : jobInstances ) {
+			for ( JobExecution jobExecution : jobExplorer.getJobExecutions(jobInstance)) {
+				jobExecutions.add(jobExecution);
+			}
+		}
+		return jobExecutions;
 	}
 
 	@Override
