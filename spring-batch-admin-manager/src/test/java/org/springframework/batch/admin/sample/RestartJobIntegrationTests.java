@@ -20,8 +20,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import javax.sql.DataSource;
-
 import org.hamcrest.Description;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,8 +28,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.test.JobRepositoryTestUtils;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.spring.batch.test.JobRepositoryTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.MessageChannel;
@@ -62,8 +63,8 @@ public class RestartJobIntegrationTests {
 	private JobRepositoryTestUtils jobRepositoryTestUtils;
 
 	@Autowired
-	public void initializeTestUtils(JobRepository jobRepository, DataSource dataSource) {
-		jobRepositoryTestUtils = new JobRepositoryTestUtils(jobRepository, dataSource);
+	public void initializeTestUtils(DatabaseClient databaseClient, JobRepository jobRepository, JobExplorer jobExplorer) {
+		jobRepositoryTestUtils = new JobRepositoryTestUtils(databaseClient, jobRepository, jobExplorer);
 	}
 
 	@Rule
