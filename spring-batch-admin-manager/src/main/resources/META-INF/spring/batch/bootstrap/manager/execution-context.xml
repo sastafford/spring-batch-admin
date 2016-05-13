@@ -26,12 +26,18 @@
 		<property name="taskExecutor" ref="poolTaskExecutor" />
 	</bean>
 
-	<bean id="jobRepository" class="com.marklogic.spring.batch.core.repository.MarkLogicJobRepository">
-		<constructor-arg ref="databaseClient"/>
+	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.SimpleJobRepository">
+		<constructor-arg name="jobInstanceDao" ref="jobInstanceDao"/>
+		<constructor-arg name="jobExecutionDao" ref="jobExecutionDao"/>
+		<constructor-arg name="stepExecutionDao" ref="jobExecutionDao"/>
+		<constructor-arg name="executionContextDao" ref="executionContextDao"/>
 	</bean>
 
-	<bean id="jobExplorer" class="com.marklogic.spring.batch.core.explore.MarkLogicJobExplorer">
-		<constructor-arg ref="databaseClient"/>
+	<bean id="jobExplorer" class="org.springframework.batch.core.explore.support.SimpleJobExplorer">
+		<constructor-arg name="jobInstanceDao" ref="jobInstanceDao"/>
+		<constructor-arg name="jobExecutionDao" ref="jobExecutionDao"/>
+		<constructor-arg name="stepExecutionDao" ref="jobExecutionDao"/>
+		<constructor-arg name="executionContextDao" ref="executionContextDao"/>
 	</bean>
 
 	<bean id="jobLoader" class="org.springframework.batch.core.configuration.support.AutomaticJobRegistrar">
@@ -55,6 +61,26 @@
 		<constructor-arg name="jobLocator" ref="jobRegistry" />
 		<constructor-arg name="jobExplorer" ref="jobExplorer" />
 	</bean>
+	
+	<bean id="jobInstanceDao" class="com.marklogic.spring.batch.core.repository.dao.MarkLogicJobInstanceDao">
+		<constructor-arg name="databaseClient" ref="databaseClient" />
+	</bean>
+	
+	<bean id="jobExecutionDao" class="com.marklogic.spring.batch.core.repository.dao.MarkLogicJobExecutionDao">
+		<constructor-arg name="databaseClient" ref="databaseClient" />
+	</bean>
+	
+	<bean id="stepExecutionDao" class="com.marklogic.spring.batch.core.repository.dao.MarkLogicStepExecutionDao">
+		<constructor-arg name="databaseClient" ref="databaseClient" />
+		<property name="jobExecutionDao">
+			<bean id="jobExecutionDao" class="com.marklogic.spring.batch.core.repository.dao.MarkLogicJobExecutionDao" />
+		</property>
+	</bean>
+	
+	<bean id="executionContextDao" class="com.marklogic.spring.batch.core.repository.dao.MarkLogicExecutionContextDao">
+		<constructor-arg name="databaseClient" ref="databaseClient" />
+	</bean>
+	
 <!-- 
 	<task:scheduled-tasks>
 		<task:scheduled ref="jobService" method="removeInactiveExecutions" fixed-delay="${batch.job.service.reaper.interval}"/>

@@ -9,22 +9,11 @@
 	
 	<bean class="org.springframework.batch.test.JobRepositoryTestUtils">
 		<property name="jobRepository">
-			<bean class="com.marklogic.spring.batch.core.repository.MarkLogicJobRepository">
-				<constructor-arg ref="databaseClient"/>
-			</bean>
+			<bean id="jobRepository" class="org.springframework.batch.core.repository.support.SimpleJobRepository" />
 		</property>
 	</bean>
-	
-	<bean name="databaseClientFactory" class="com.marklogic.client.DatabaseClientFactory.Bean">
-   		<property name="host" value="faa"/>
-   		<property name="port" value="8200"/>
-   		<property name="user" value="admin"/>
-   		<property name="password" value="admin"/>
-   		<property name="authenticationValue" value="digest"/>
- 	</bean>
 
 	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
 
-	<bean name="databaseClient" class="com.marklogic.client.DatabaseClient" factory-bean="databaseClientFactory" factory-method="newClient" />
 
 </beans>
